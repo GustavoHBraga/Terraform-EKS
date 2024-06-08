@@ -1,8 +1,9 @@
-resource "kubernetes_deployment" "Django-API" {
+resource "kubernetes_deployment" "django_api" {
+
   metadata {
-    name = "django-api"
+    name = "django"
     labels = {
-      name = "Django"
+      name = "django"
     }
   }
 
@@ -11,14 +12,14 @@ resource "kubernetes_deployment" "Django-API" {
 
     selector {
       match_labels = {
-        name = "Django" #Interligando as duas partes entre metadata e selector
+        name = "django" #Interligando as duas partes entre metadata e selector
       }
     }
 
     template {
       metadata {
         labels = {
-          name = "Django"
+          name = "django"
         }
       }
 
@@ -51,4 +52,30 @@ resource "kubernetes_deployment" "Django-API" {
       }
     }
   }
+}
+
+resource "kubernetes_service" "LoadBalancer" {
+  metadata {
+    name = "load-balancer-django-api"
+  }
+  spec {
+    selector = {
+      nome = "django"
+    }
+    port {
+      port = 8000
+      target_port = 8000
+    }
+    type = "LoadBalancer"
+  }
+}
+
+data "kubernetes_service" "nomeDNS" {
+    metadata {
+      name = "load-balancer-django-api"
+    }
+}
+
+output "URL" {
+  value = data.kubernetes_service.nomeDNS.status
 }
